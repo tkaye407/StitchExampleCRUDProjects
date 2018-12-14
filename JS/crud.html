@@ -1,0 +1,68 @@
+<html>
+   <head>
+      <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.0.0/stitch.js"></script>
+      <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.1.0/stitch-core.js"></script>
+      <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.1.0/stitch-services-aws.js"></script>
+      <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.1.0/stitch-services-mongodb-remote.js"></script>
+      <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.1.0/stitch-services-twilio.js"></script>
+      <script src="external_services.js"></script>
+      <script src="insert.js"></script>
+      <script src="find.js"></script>
+      <script src="update.js"></script>
+      <script src="delete.js"></script>
+      <script src="aggregate.js"></script>
+      <script src="auth.js"></script>
+      <script>
+         // Initialize the App Client
+         const stitchClient = stitch.Stitch.initializeDefaultAppClient("stitchdocsexamples-pqwyr");
+
+         // Get a MongoDB Service Client
+         const mongoClient = stitchClient.getServiceClient(
+           stitch.RemoteMongoClient.factory,
+           "mongodb-atlas"
+         );
+
+         // Get a reference to the items database
+         const itemsCollection = mongoClient.db("store").collection("items");
+
+         function reset() {
+          itemsCollection.deleteMany({}).then( result => {
+            console.log(result.deletedCount)
+            insertOne();
+            insertMany();
+          });
+         }
+
+         // Authenticate anonymously
+         anonymousLogin()
+         
+         // Function to call the sendSESEmail() function
+         function findAll() {
+          itemsCollection.find({}).asArray().then(results => {
+            console.log(results);
+          })
+         }
+      </script>
+   </head>
+   <body>
+      <h3> Welcome to MongoDB Crud Examples </h3><hr>
+      Click to perform desired action <br>
+      <input type="submit" value="findAll" onClick="findAll()"><br>
+      <input type="submit" value="reset" onClick="reset()"><br>
+      <input type="submit" value="insertOne" onClick="insertOne()"><br>
+      <input type="submit" value="insertMany" onClick="insertMany()"><br>
+      <input type="submit" value="findOne" onClick="findOne()"><br>
+      <input type="submit" value="findMany" onClick="findMany()"><br>
+      <input type="submit" value="updateOneAddField" onClick="updateOneAddField()"><br>
+      <input type="submit" value="updateOnePush" onClick="updateOnePush()"><br>
+      <input type="submit" value="updateOneUpsert" onClick="updateOneUpsert()"><br>
+      <input type="submit" value="updateMany" onClick="updateMany()"><br>
+      <input type="submit" value="deleteOne" onClick="deleteOne()"><br>
+      <input type="submit" value="deleteMany" onClick="deleteMany()"><br>
+      <input type="submit" value="aggregate" onClick="aggregate()"><br>
+      <input type="submit" value="sendTwilioMessage" onClick="sendTwilioMessage()"><br>
+      <input type="submit" value="sendTwilioMessageUsingFunction" onClick="sendTwilioMessageUsingFunction()"><br>
+      <input type="submit" value="sendSESEmail" onClick="sendSESEmail()"><br>
+
+   </body>
+</html>

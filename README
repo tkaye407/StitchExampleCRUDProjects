@@ -1,0 +1,26 @@
+These three projects can be used for Testing the Javascript Browser SDK, iOS SDK, and Java Android SDK. See details below for how to run and use these sample applications. 
+
+iOS: 
+	This application is just a button that when clicked calls the sendMessageClickedFunction(). Just comment / uncomment the lines in that file to run that particular functionality. Find details below for how to run the project and work with its contents. 
+
+	1. Must have xCode to run
+	2. Navigate to /iOS and run ~ pod install
+	3. Open the .xcworkspace file
+	4. To switch the app-id for the project, go to AppDelegate.swift
+	5. Otherwise all other functions are in ViewController.swift
+
+Android: 
+	This application is also just a button that when clicked calls the onClick() function in MainActivity.java. Just comment / uncomment the lines in that file to run that particular functionality. Find details below for how to run the project and work with its contents.
+
+	1. Must Download AndroidStudio to run
+	2. To Run with a Simulator you must pick an Android Virtual Device with an x86_64 ABI.
+	3. To change the app-id for the project, go to res/values/string.xml and change the value for  stitch_client_app_id
+	4. All remaining functionality is in java/com.example.tkaye.stitchexample/MainActivity.java
+
+
+JavaScript: 
+	This application is just an HTML file that has several buttons that run the respective function.
+	1. Double click on crud.html and clock on the buttons
+	2. Should have the developer console visible as this is where the application outputs the data
+	3. The functions are in the respective javascript files: 
+		insert.js / find.js / update.js / delete.js / auth.js / external_services.js
