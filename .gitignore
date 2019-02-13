@@ -1,7 +1,9 @@
 .DS_Store
 
+Dan/
 
 iOS/xcuserdata/
+iOS/StitchExamples.xcworkspace/xcuserdata/
 iOS/*.xcscmblueprint
 iOS/*.xccheckout
 iOS/build/
@@ -16,6 +18,8 @@ iOS/!default.mode2v3
 iOS/*.perspectivev3
 iOS/!default.perspectivev3
 iOS/Pods/
+
+Node/node_modules
 
 
 Android/*.iml

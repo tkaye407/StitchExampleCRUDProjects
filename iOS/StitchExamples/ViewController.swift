@@ -212,6 +212,8 @@ class ViewController: UIViewController {
         }
     }
     
+    
+    
     // Update document by adding document to array of subdocuments
     func updatePushArrayOfSubdocuments() {
         let filterDoc : Document = ["name": "football"];
