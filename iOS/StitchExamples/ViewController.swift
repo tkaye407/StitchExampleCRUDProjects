@@ -17,6 +17,7 @@ import StitchCoreRemoteMongoDBService
 import StitchRemoteMongoDBService
 
 class ViewController: UIViewController {
+    @IBOutlet weak var output: UITextView!
     
     private lazy var stitchClient = Stitch.defaultAppClient!
     private var mongoClient: RemoteMongoClient?
@@ -31,23 +32,219 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
     }
     
+    @IBAction func inserOneClicked(_ sender: Any) {
+        let doc: Document = [
+            "name": "legos",
+            "quantity": 10,
+            "category": "toys",
+            "reviews": [["username": "mongolover", "comment": "this is great"] as Document],
+            ];
+        
+        itemsCollection?.insertOne(doc) { result in
+            switch result {
+            case .success(let result):
+                let text = "Inserted Document with id: \(result.insertedId)\n\n\(doc)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                DispatchQueue.main.async() {
+                    self.output.text = "Failed to Insert Document with Error: \(error)";
+                }
+            }
+        }
+    }
+    
+    @IBAction func insertManyClicked(_ sender: Any) {
+        let doc1: Document = ["name": "basketball", "category": "sports", "quantity": 20, "reviews": []];
+        let doc2: Document = ["name": "football", "category": "sports", "quantity": 30, "reviews": []];
+        
+        itemsCollection?.insertMany([doc1, doc2]) { result in
+            switch result {
+            case .success(let result):
+                DispatchQueue.main.async() {
+                    self.output.text = "Inserted Documents with ids: \(result.insertedIds)\n\n\([doc1, doc2])";
+                }
+            case .failure(let error):
+                DispatchQueue.main.async() {
+                    self.output.text = "Failed to Insert Document with Error: \(error)";
+                }            }
+        }
+    }
+    
+    @IBAction func deleteOneClicked(_ sender: Any) {
+        let filterDoc : Document = ["name": "legos"];
+        
+        itemsCollection?.deleteOne(filterDoc) { result in
+            switch result {
+            case .success(let result):
+                let text = "Successfully Deleted \(result.deletedCount) documents with filter \(filterDoc)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                DispatchQueue.main.async() {
+                    self.output.text = "Failed to Delete Document with Error: \(error)";
+                }
+            }
+        }
+    }
+    
+    @IBAction func deleteeManyClicked(_ sender: Any) {
+        let filterDoc : Document = ["reviews": ["$size": 0] as Document];
+        
+        itemsCollection?.deleteMany(filterDoc) { result in
+            switch result {
+            case .success(let result):
+                let text = "Successfully Deleted \(result.deletedCount) documents with filter \(filterDoc)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                DispatchQueue.main.async() {
+                    self.output.text = "Failed to Delete Document with Error: \(error)";
+                }
+            }
+        }
+    }
+    
+    @IBAction func findOneClicked(_ sender: Any) {
+        let filterDoc : Document = ["quantity": ["$gte": 25] as Document];
+        let options = RemoteFindOptions(limit: 1);
+        
+        itemsCollection?.find(filterDoc, options: options).first({ result in
+            switch result {
+            case .success(let result):
+                let text = "Successfully found document with filter: \(filterDoc)\n\n\(result?.description ?? "None Found")";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+                print("Successfully Found Document: \(result?.description ?? "None Found")");
+            case .failure(let error):
+                let text = "Failed to Find Document with Error: \(error)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            }
+        })
+    }
+    
+    @IBAction func findManyClicked(_ sender: Any) {
+        let filterDoc : Document = ["reviews.0": ["$exists": true] as Document];
+        let options = RemoteFindOptions(projection: ["_id": 0], sort: ["name": 1]);
+        
+        itemsCollection?.find(filterDoc, options: options).toArray({ results in
+            switch results {
+            case .success(let results):
+                var text = "Successfully found \(results.count) documents with filter: \(filterDoc)\n\n";
+                for result in results {
+                    text += "\(result)\n";
+                }
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                let text = "Failed to Find Documents with Error: \(error)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            }
+        })
+    }
+    
+    @IBAction func updateOneClicked(_ sender: Any) {
+        let filterDoc : Document = ["name": "board game"];
+        let updateDoc: Document = ["$inc": ["quantity": 5] as Document];
+        let options = RemoteUpdateOptions(upsert: true);
+        
+        itemsCollection?.updateOne(filter: filterDoc, update: updateDoc, options: options) { result in
+            switch result {
+            case .success(let result):
+                var text = "";
+                if let upsertid = result.upsertedId {
+                    text += "Successfully upserted document with id: \(upsertid)."
+                } else {
+                    text += "Update Successful, matched: \(result.matchedCount), modified: \(result.modifiedCount) documents.";
+                }
+                text += "\n\nFilter: \(filterDoc)\nUpdate: \(updateDoc)"
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                let text = "Failed to Update Documents with Error: \(error)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            }
+        }
+    }
+    
+    @IBAction func updateOnePushClicked(_ sender: Any) {
+        let filterDoc : Document = ["name": "football"];
+        let updateDoc : Document = ["$push":
+            ["reviews": [
+                "username": "stitchfan2018", "comment": "what a neat product"
+                ] as Document
+                ] as Document
+        ];
+        
+        itemsCollection?.updateOne(filter: filterDoc, update: updateDoc) { result in
+            switch result {
+            case .success(let result):
+                var text = "Update Successful, matched: \(result.matchedCount), modified: \(result.modifiedCount) documents.";
+                text += "\n\nFilter: \(filterDoc)\nUpdate: \(updateDoc)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                let text = "Failed to Update Documents with Error: \(error)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            }
+        }
+    }
+    
+    @IBAction func updateManyClicked(_ sender: Any) {
+        let filterDoc : Document = [];
+        let updateDoc : Document = ["$mul": ["quantity": 10] as Document];
+        
+        itemsCollection?.updateMany(filter: filterDoc, update: updateDoc) { result in
+            switch result {
+            case .success(let result):
+                var text = "Update Successful, matched: \(result.matchedCount), modified: \(result.modifiedCount) documents.";
+                text += "\n\nFilter: \(filterDoc)\nUpdate: \(updateDoc)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                let text = "Failed to Update Documents with Error: \(error)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            }
+        }
+    }
+    
     // Function called on button click to send email
     @IBAction func sendMessageClicked(_ sender: Any) {
-        // insertOne();
-        // insertMany();
-        
-        // findOne();
-        // findMany();
-        
-        // deleteOne();
-        // deleteMany();
-        
-        // updateChangeFieldAndAddField();
-        // upsertOne();
-        // updatePushArrayOfSubdocuments();
-        // updateMany();
-        
-        aggregate();
+        itemsCollection?.find([]).toArray({ results in
+            switch results {
+            case .success(let results):
+                var text = "All Documents\n\n";
+                for result in results {
+                    text += "\(result)\n\n";
+                }
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                let text = "Failed to Find Documents with Error: \(error)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            }
+        })
     }
     
     
@@ -70,110 +267,6 @@ class ViewController: UIViewController {
     }
     
     /***************************************************************************
-     * INSERT                                                                  *
-     ***************************************************************************/
-    func insertOne() {
-        let doc: Document = [
-            "name": "legos",
-            "quantity": 10,
-            "category": "toys",
-            "reviews": [["username": "mongolover", "comment": "this is great"] as Document],
-            ];
-        
-        itemsCollection?.insertOne(doc) { result in
-            switch result {
-            case .success(let result):
-                print("Successfully Inserted Document with ID: \(result.insertedId))");
-            case .failure(let error):
-                print("Failed to Insert Document with Error: \(error)");
-            }
-        }
-    }
-    
-    func insertMany() {
-        let doc1: Document = ["name": "basketball", "category": "sports", "quantity": 20, "reviews": []];
-        let doc2: Document = ["name": "football", "category": "sports", "quantity": 30, "reviews": []];
-        
-        itemsCollection?.insertMany([doc1, doc2]) { result in
-            switch result {
-            case .success(let result):
-                print("Successfully Inserted Documents with IDs: \(result.insertedIds))");
-            case .failure(let error):
-                print("Failed to Insert Documents with Error: \(error)");
-            }
-        }
-    }
-    
-    /***************************************************************************
-     * FIND                                                                    *
-     ***************************************************************************/
-    // Find one item with a quantity greater than or equal to 25
-    func findOne() {
-        let filterDoc : Document = ["quantity": ["$gte": 25] as Document];
-        let options = RemoteFindOptions(limit: 1);
-        
-        itemsCollection?.find(filterDoc, options: options).first({ result in
-            switch result {
-            case .success(let result):
-                print("Successfully Found Document: \(result?.description ?? "None Found")");
-            case .failure(let error):
-                print("Failed to Find Document with Error: \(error)");
-            }
-        })
-    }
-    
-    // Find all items with at least one review and sort by name and hide the _id
-    func findMany() {
-        //let filterDoc : Document = ["reviews": ["$size": ["$gte": 1] as Document] as Document];
-        let filterDoc : Document = ["reviews.0": ["$exists": true] as Document];
-        let options = RemoteFindOptions(projection: ["_id": 0], sort: ["name": 1]);
-        
-        itemsCollection?.find(filterDoc, options: options).toArray({ results in
-            switch results {
-            case .success(let results):
-                print("Successfully Found \(results.count) documents: ");
-                results.forEach({item in
-                    print(item);
-                })
-            case .failure(let error):
-                print("Failed to Find Documents with Error: \(error)");
-            }
-        })
-    }
-    
-    /***************************************************************************
-     * DELETE                                                                  *
-     ***************************************************************************/
-    
-    // Delete an item with the name "legos" and only one
-    func deleteOne() {
-        let filterDoc : Document = ["name": "legos"];
-        
-        itemsCollection?.deleteOne(filterDoc) { result in
-            switch result {
-            case .success(let result):
-                print("Successfully Deleted \(result.deletedCount) documents.");
-            case .failure(let error):
-                print("Failed to Delete Documents with Error: \(error)");
-            }
-        }
-    }
-    
-    // Delete all items without any reviews
-    func deleteMany() {
-        let filterDoc : Document = ["reviews": ["$size": 0] as Document];
-        
-        itemsCollection?.deleteMany(filterDoc) { result in
-            switch result {
-            case .success(let result):
-                print("Successfully Deleted \(result.deletedCount) documents.");
-            case .failure(let error):
-                print("Failed to Delete Documents with Error: \(error)");
-            }
-        }
-    }
-    
-    /***************************************************************************
      * UPDATE                                                                  *
      ***************************************************************************/
     
@@ -183,62 +276,6 @@ class ViewController: UIViewController {
         let updateDoc : Document = ["$set": ["name": "blocks", "price": 20.99] as Document];
         
         itemsCollection?.updateOne(filter: filterDoc, update: updateDoc) { result in
-            switch result {
-            case .success(let result):
-                print("Update Successful, matched: \(result.matchedCount), modified: \(result.modifiedCount) documents.");
-            case .failure(let error):
-                print("Failed to Update Document with Error: \(error)");
-            }
-        }
-    }
-    
-    // Upsert one document
-    func upsertOne() {
-        let filterDoc : Document = ["name": "board game"];
-        let updateDoc: Document = ["$inc": ["quantity": 5] as Document];
-        let options = RemoteUpdateOptions(upsert: true);
-        
-        itemsCollection?.updateOne(filter: filterDoc, update: updateDoc, options: options) { result in
-            switch result {
-            case .success(let result):
-                if let upsertid = result.upsertedId {
-                    print("Successfully upserted document with id: \(upsertid).");
-                } else {
-                    print("Update Successful, matched: \(result.matchedCount), modified: \(result.modifiedCount) documents.");
-                }
-            case .failure(let error):
-                print("Failed to Update Document with Error: \(error)");
-            }
-        }
-    }
-    
-    
-    
-    // Update document by adding document to array of subdocuments
-    func updatePushArrayOfSubdocuments() {
-        let filterDoc : Document = ["name": "football"];
-        let updateDoc : Document = ["$push":
-            ["reviews": [
-                "username": "stitchfan2018", "comment": "what a neat product"
-            ] as Document
-        ] as Document];
-        
-        itemsCollection?.updateOne(filter: filterDoc, update: updateDoc) { result in
-            switch result {
-            case .success(let result):
-                print("Update Successful, matched: \(result.matchedCount), modified: \(result.modifiedCount) documents.");
-            case .failure(let error):
-                print("Failed to Update Document with Error: \(error)");
-            }
-        }
-    }
-    
-    // Update many documents
-    func updateMany() {
-        let filterDoc : Document = [];
-        let updateDoc : Document = ["$mul": ["quantity": 10] as Document];
-        
-        itemsCollection?.updateMany(filter: filterDoc, update: updateDoc) { result in
             switch result {
             case .success(let result):
                 print("Update Successful, matched: \(result.matchedCount), modified: \(result.modifiedCount) documents.");
