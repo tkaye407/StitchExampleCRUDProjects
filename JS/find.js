@@ -1,3 +1,8 @@
+function findAll() {
+ itemsCollection.find({}).asArray().then(results => {
+   console.log(results);
+ })
+}
 
 function findOne() {
 	const filterDoc = {quantity: {$gte: 25}};
@@ -28,7 +33,7 @@ function findOneById() {
 }
 
 function findOneRegExp() {
-	const filterDoc = {name: stitch.BSON.BSONRegExp('bask', 'i')};
+	const filterDoc = {name: new stitch.BSON.BSONRegExp('bask', 'i')};
 	itemsCollection.find(filterDoc, {limit: 1}).first().then(result => {
 		if (result) {
 			console.log("Successfully Found Document: " + JSON.stringify(result));
@@ -52,4 +57,8 @@ function findMany() {
 	}, (error) => {
 		alert("Error Finding Documents: " + error);
 	});
+}
+
+function watch() {
+	console.log("HI")
 }

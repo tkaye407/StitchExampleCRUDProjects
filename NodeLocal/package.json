@@ -1,0 +1,15 @@
+{
+  "name": "stitchtest",
+  "version": "1.0.0",
+  "description": "Testing Stitch Node",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Tyler KAye",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb-stitch-server-sdk": "^4.2.0",
+    "mongodb-stitch-server-services-mongodb-remote": "^4.2.0"
+  }
+}

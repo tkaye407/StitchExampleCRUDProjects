@@ -20,11 +20,17 @@ iOS/!default.perspectivev3
 iOS/Pods/
 
 Node/node_modules
+NodeLocal/node_modules
+
+ReactNative/node_modules
+ReactNativeLocal/node_modules
+ReactNativeLocal/
 
 
 Android/*.iml
 Android/.idea/workspace.xml
 Android/.idea/tasks.xml
+
 Android/.idea/gradle.xml
 Android/.idea/assetWizardSettings.xml
 Android/.idea/dictionaries
