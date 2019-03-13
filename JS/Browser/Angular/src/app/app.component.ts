@@ -1,16 +1,30 @@
 import { Component, OnInit } from '@angular/core';
+
 import { Stitch, 
   AnonymousCredential,
   UserPasswordCredential,
   RemoteMongoClient, 
   BSON,
   StitchAppClient
-} from 'mongodb-stitch-browser-sdk';
+} from "/Users/tkaye/Desktop/StitchSDKs/js/packages/browser/sdk/dist/cjs";
 
 import {
   AwsServiceClient, 
   AwsRequest
-} from 'mongodb-stitch-browser-services-aws';
+} from "/Users/tkaye/Desktop/StitchSDKs/js/packages/browser/services/aws/dist/cjs";
+
+// import { Stitch, 
+//   AnonymousCredential,
+//   UserPasswordCredential,
+//   RemoteMongoClient, 
+//   BSON,
+//   StitchAppClient
+// } from 'mongodb-stitch-browser-sdk';
+
+// import {
+//   AwsServiceClient, 
+//   AwsRequest
+// } from 'mongodb-stitch-browser-services-aws';
 
 @Component({
   selector: 'app-root',
@@ -61,7 +75,12 @@ export class AppComponent implements OnInit {
   }
 
   callMongo() {
-    this.mongoResult = "Reuslt is {}";
+    let mongoClient = this.stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
+    mongoClient.db("store").collection("items").findOne().then(result => {
+      this.mongoResult = `Successfully called mongo findOne(): ${JSON.stringify(result)}`; 
+    }).catch(err => {
+      this.mongoResult = `Failed to call mongo findOne() with error: ${err}`;
+    })
   }
 
   callAWS() {
@@ -78,6 +97,10 @@ export class AppComponent implements OnInit {
   }
 
   callFunc() {
-    this.funcResult = "Stitch function returned mehh";
+    this.stitchClient.callFunction("getString", ["string1", "otherString2"]).then(result => {
+      this.funcResult = `Successfully called stitch function: ${result}`; 
+    }).catch(err => {
+      this.funcResult = `Failed to call stitch function with error: ${err}`;
+    })
   }
 }

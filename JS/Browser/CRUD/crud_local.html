@@ -25,20 +25,20 @@
          // Get a reference to the items database
          const itemsCollection = mongoClient.db("store").collection("items");
 
-         // Authenticate anonymously
-         anonymousLogin()
-
-         stitchClient.callFunction("awsS3").then(result => {
-            console.log("Result from Aws Function ", result)
-          }).catch(err => {
-            console.log(err)
-          })
+         // stitchClient.callFunction("awsS3").then(result => {
+         //    console.log("Result from Aws Function ", result)
+         //  }).catch(err => {
+         //    console.log(err)
+         //  })
 
       </script>
    </head>
    <body>
       <h3> Welcome to MongoDB Crud Examples </h3><hr>
       Click to perform desired action <br>
+      <input type="submit" value="login" onClick="login()"><br>
+      <input type="submit" value="logout" onClick="logout()"><br>
+      <input type="submit" value="callStitchFunction" onClick="callFunction()"><br>
       <input type="submit" value="findAll" onClick="findAll()"><br>
       <input type="submit" value="reset" onClick="reset()"><br>
       <input type="submit" value="insertOne" onClick="insertOne()"><br>

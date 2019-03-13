@@ -14,7 +14,7 @@ function findOne() {
 			console.log("No matching document found");
 		}
 	}, (error) => {
-		alert("Error Finding Document: " + error);
+		console.log("Error Finding Document: " + error);
 	});
 }
 
@@ -28,7 +28,7 @@ function findOneAndReplace() {
 			console.log("No matching document found");
 		}
 	}, (error) => {
-		alert("Error Finding Document: " + error);
+		console.log("Error Finding Document: " + error);
 	});
 }
 
@@ -42,7 +42,7 @@ function findOneById() {
 			console.log("No matching document found");
 		}
 	}, (error) => {
-		alert("Error Finding Document: " + error);
+		console.log("Error Finding Document: " + error);
 	});
 }
 
@@ -55,7 +55,7 @@ function findOneRegExp() {
 			console.log("No matching document found");
 		}
 	}, (error) => {
-		alert("Error Finding Document: " + error);
+		console.log("Error Finding Document: " + error);
 	});
 }
 
@@ -69,7 +69,7 @@ function findMany() {
 			console.log(i + ": " + JSON.stringify(results[i]));
 		}
 	}, (error) => {
-		alert("Error Finding Documents: " + error);
+		console.log("Error Finding Documents: " + error);
 	});
 }
 
