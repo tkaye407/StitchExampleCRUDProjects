@@ -29,11 +29,11 @@ JavaScript:
 			Basic Auth (login / logout), Mongo Queries, AWS Requests, and Stitch Function Requests.
 			Can point it to your local copy of the Stitch SDK if you want (top of app.component.ts)
 	Server: 
-		Node: ` node index.js `
+		Node: node index.js
 			A node server that executes a few Mongo Queries, an AWS Request, a Stitch Function.  
 			Can point it to your local copy of the Stitch SDK if you want (top of index.js)
 	ReactNative: 
-		PureRN: ` react-native run-android ` or ` react-native run-ios `
+		PureRN: react-native run-android or react-native run-ios
 			A react native app that builds an iOS and Android app 
 			App has buttons that execute certain functionality including: 
 			Basic Auth (login / logout), Mongo Queries, AWS Requests, and Stitch Function Requests.
