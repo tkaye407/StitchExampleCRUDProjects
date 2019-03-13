@@ -11,11 +11,13 @@ import java.util.Arrays;
 import java.util.List;
 
 // Stitch-Related Imports
+import com.google.android.gms.tasks.Tasks;
 import com.mongodb.stitch.android.core.auth.StitchUser;
 import com.mongodb.stitch.android.core.Stitch;
 import com.mongodb.stitch.android.core.StitchAppClient;
 import com.mongodb.stitch.android.services.mongodb.remote.RemoteFindIterable;
 import com.mongodb.stitch.core.auth.providers.anonymous.AnonymousCredential;
+import com.mongodb.stitch.core.auth.providers.userpassword.UserPasswordCredential;
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteDeleteResult;
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteInsertManyResult;
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteInsertOneResult;
@@ -45,6 +47,9 @@ import org.bson.Document;
 public class MainActivity extends AppCompatActivity {
 
     Button sendMessageButton;
+    Button userpassLoginButton;
+    Button anonLoginButton;
+    Button removeAllUsersButton;
     private StitchAppClient stitchClient;
     private RemoteMongoClient mongoClient;
     private RemoteMongoCollection itemsCollection;
@@ -54,11 +59,72 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sendMessageButton = (Button) findViewById(R.id.sendMessageButton);
-        anonymousLogin();
+        anonLoginButton = (Button) findViewById(R.id.anonLoginButton);
+        userpassLoginButton = (Button) findViewById(R.id.userpassLoginButton);
+        removeAllUsersButton = (Button) findViewById(R.id.removeAllUsersButton);
+
+
+//        anonymousLogin();
 
         stitchClient = Stitch.getDefaultAppClient();
         mongoClient = stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
         itemsCollection = mongoClient.getDatabase("store").getCollection("items");
+
+
+
+
+
+
+
+
+
+        anonLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("app", String.format("num users before: %d",
+                        stitchClient.getAuth().listUsers().size()));
+                try {
+                    Tasks.await(stitchClient.getAuth().loginWithCredential(new AnonymousCredential()));
+                } catch (Exception e) {
+
+                }
+                Log.d("app", String.format("num users after: %d",
+                        stitchClient.getAuth().listUsers().size()));
+                listUsers();
+            }
+        });
+
+      removeAllUsersButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          removeAllUsers();
+          Log.d("app", String.format("num users after: %d",
+                  stitchClient.getAuth().listUsers().size()));
+          listUsers();
+        }
+      });
+
+        userpassLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("app", String.format("num users before=: %d",
+                        stitchClient.getAuth().listUsers().size()));
+
+              // Login with Anonymous credentials and handle the result
+              stitchClient.getAuth().loginWithCredential(new UserPasswordCredential("tkaye407@gmail.com", "password")).addOnCompleteListener(new OnCompleteListener<StitchUser>() {
+                @Override
+                public void onComplete(@NonNull final Task<StitchUser> task) {
+                  if (task.isSuccessful()) {
+                    Log.d("app", String.format("num users after: %d",
+                            stitchClient.getAuth().listUsers().size()));
+                    listUsers();
+                  } else {
+                    Log.e("app", "failed to log in", task.getException());
+                  }
+                }
+              });
+            }
+        });
 
         sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 // updateOneUpsert();
                 // updateMany();
 
-                aggregate();
+                 aggregate();
 
                 // sendTwilioSMS();
                 // sendSESEmail();
@@ -85,6 +151,18 @@ public class MainActivity extends AppCompatActivity {
                 // anonymousLogin();
             }
         });
+    }
+
+    public void listUsers() {
+        for (StitchUser user : stitchClient.getAuth().listUsers()) {
+            Log.d("app", String.format("%s %s", user.getId(), user.getLoggedInProviderType()));
+        }
+    }
+
+    public void removeAllUsers() {
+        for (StitchUser user: stitchClient.getAuth().listUsers()) {
+            stitchClient.getAuth().removeUserWithId(user.getId());
+        }
     }
 
 

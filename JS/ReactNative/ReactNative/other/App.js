@@ -2,6 +2,7 @@ import React from 'react'
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { Stitch, 
     AnonymousCredential,
+    UserPasswordCredential,
     RemoteMongoClient,
     BSON 
 } from 'mongodb-stitch-react-native-sdk';
@@ -69,9 +70,10 @@ export default class App extends React.Component {
   }
  
   _onPressLogin() {
-    this.state.client.auth.loginWithCredential(new AnonymousCredential()).then(user => {
-        console.log(`Successfully logged in as user ${user.id}`);
-        this.setState({ currentUserId: user.id })
+    this.state.client.auth.loginWithCredential(new UserPasswordCredential("tkaye407@gmail.com", "password")).then(user => {
+      console.log(`Successfully logged in as user ${user.id}`);
+      console.log("user: ", user.identities[0])
+      this.setState({ currentUserId: user.id })
     }).catch(err => {
         console.log(`Failed to log in anonymously: ${err}`);
         this.setState({ currentUserId: undefined })

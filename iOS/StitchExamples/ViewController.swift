@@ -28,8 +28,101 @@ class ViewController: UIViewController {
         // Set the stitch variables declared above for use below
         mongoClient = stitchClient.serviceClient(fromFactory: remoteMongoClientFactory, withName: "mongodb-atlas")
         itemsCollection = mongoClient?.db("store").collection("items")
-        anonymousLogin()
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    @IBAction func loginClicked(_ sender: Any) {
+        // Get the default AppClient
+        let stitchClient = Stitch.defaultAppClient!;
+        
+        // Login with anonymous credentials
+        stitchClient.auth.login(withCredential: AnonymousCredential()) { result in
+            switch result {
+            case .success(let user):
+                let text = "Successfully authenticated with user: \(user.id)";
+                DispatchQueue.main.async() {
+                    self.output.text = text;
+                }
+            case .failure(let error):
+                DispatchQueue.main.async() {
+                    self.output.text = "Failed to auth with error: \(error)";
+                }
+            }
+        }
+    }
+    
+    @IBAction func logoutClicked(_ sender: Any) {
+        // Get the default AppClient
+        let stitchClient = Stitch.defaultAppClient!;
+        stitchClient.auth.logout { result in
+            switch result {
+            case .success( _):
+                DispatchQueue.main.async() {
+                    self.output.text = "Successfully logged out";
+                }
+            case .failure(let error):
+                DispatchQueue.main.async() {
+                    self.output.text = "Failed to logout with error: \(error)";
+                }
+            }
+        }
+    }
+    
+    @IBAction func callFunctionClicked(_ sender: Any) {
+        let stitchClient = Stitch.defaultAppClient!;
+        stitchClient.callFunction(withName: "getString", withArgs: ["string1", "string2"]) { (result: StitchResult<String>) in
+            print(result)
+            switch result {
+            case .success(let res):
+                DispatchQueue.main.async() {
+                    self.output.text = "Successfully called stitch function: \(res)";
+                }
+            case .failure(let error):
+                DispatchQueue.main.async() {
+                    self.output.text = "Failed to call stitch function with error: \(error)";
+                }
+            }
+        }
+        
+    }
+    
+    @IBAction func awsRequestClicked(_ sender: Any) {
+        // Get the default AppClient
+        let stitchClient = Stitch.defaultAppClient!;
+        
+        // myAWSService is the name of the aws service you created in the stitch UI,
+        let aws = stitchClient.serviceClient(fromFactory: awsServiceClientFactory, withName: "myAWSService")
+        
+        let args: Document = [
+            "Bucket": "tklivebucket",
+            "Key": "example2"
+        ];
+        
+        
+        do {
+            // Build the request object for SendEmail function in SES service
+            let request = try AWSRequestBuilder()
+                .with(service: "s3")
+                .with(action: "GetObject")
+                .with(arguments: args)
+                .build()
+            
+            // Execute the function and handle the result
+            aws.execute(request: request, {(result: StitchResult<Document>) in
+                switch result {
+                case .success(let result):
+                    DispatchQueue.main.async() {
+                        self.output.text = "Successfully called aws function: \(String(describing: result))";
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async() {
+                        self.output.text = "Failed to call aws GetObject with error: \(String(describing: error))";
+                    }
+                }
+            })
+        } catch {
+            print("Failed to Send Email");
+        }
     }
     
     @IBAction func inserOneClicked(_ sender: Any) {

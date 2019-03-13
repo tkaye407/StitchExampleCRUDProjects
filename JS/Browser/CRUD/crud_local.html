@@ -28,6 +28,12 @@
          // Authenticate anonymously
          anonymousLogin()
 
+         stitchClient.callFunction("awsS3").then(result => {
+            console.log("Result from Aws Function ", result)
+          }).catch(err => {
+            console.log(err)
+          })
+
       </script>
    </head>
    <body>
@@ -38,6 +44,7 @@
       <input type="submit" value="insertOne" onClick="insertOne()"><br>
       <input type="submit" value="insertMany" onClick="insertMany()"><br>
       <input type="submit" value="findOne" onClick="findOne()"><br>
+      <input type="submit" value="findOneAndReplace" onClick="findOneAndReplace()"><br>
       <input type="submit" value="findOneById" onClick="findOneById()""><br>
       <input type="submit" value="findRegExp" onClick="findOneRegExp()"><br>
       <input type="submit" value="findMany" onClick="findMany()"><br>

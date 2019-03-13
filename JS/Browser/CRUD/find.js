@@ -7,7 +7,21 @@ function findAll() {
 function findOne() {
 	const filterDoc = {quantity: {$gte: 25}};
 
-	itemsCollection.find(filterDoc, {limit: 1}).first().then(result => {
+	itemsCollection.findOne().then(result => {
+		if (result) {
+			console.log("Successfully Found Document: " + JSON.stringify(result));
+		} else {
+			console.log("No matching document found");
+		}
+	}, (error) => {
+		alert("Error Finding Document: " + error);
+	});
+}
+
+function findOneAndReplace() {
+	const filterDoc = {quantity: {$gte: 25}};
+
+	itemsCollection.findOneAndReplace({}, {}).then(result => {
 		if (result) {
 			console.log("Successfully Found Document: " + JSON.stringify(result));
 		} else {

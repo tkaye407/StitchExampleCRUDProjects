@@ -19,12 +19,13 @@ iOS/*.perspectivev3
 iOS/!default.perspectivev3
 iOS/Pods/
 
-Node/node_modules
-NodeLocal/node_modules
-
-ReactNative/node_modules
-ReactNativeLocal/node_modules
-ReactNativeLocal/
+JS/Browser/Anular/node_modules/
+JS/ReactNative/PureRN/node_modules/
+JS/ReactNative/PureRN/android/
+JS/ReactNative/PureRN/iOS/
+JS/ReactNative/ReactNative/node_modules/
+JS/Server/Node/node_modules/
+JS/Server/NodeLocal/node_modules/
 
 
 Android/*.iml
