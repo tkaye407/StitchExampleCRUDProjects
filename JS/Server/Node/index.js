@@ -1,28 +1,31 @@
-const {
-    Stitch, 
-    AnonymousCredential,
-    RemoteMongoClient,
-    BSON
-} = require('mongodb-stitch-server-sdk');
-
-const {
-    AwsRequest, 
-    AwsServiceClient
-} = require("mongodb-stitch-server-services-aws");
-
 // const {
 //     Stitch, 
 //     AnonymousCredential,
 //     RemoteMongoClient,
 //     BSON
-// } = require("/Users/tkaye/Desktop/StitchSDKs/js/packages/server/sdk/dist/cjs");
+// } = require('mongodb-stitch-server-sdk');
 
 // const {
 //     AwsRequest, 
 //     AwsServiceClient
-// } = require("/Users/tkaye/Desktop/StitchSDKs/js/packages/server/services/aws/dist/cjs");
+// } = require("mongodb-stitch-server-services-aws");
+
+const {
+    Stitch, 
+    AnonymousCredential,
+    RemoteMongoClient,
+    BSON
+} = require("/Users/tkaye/Desktop/StitchSDKs/js/packages/server/sdk/dist/cjs");
+
+const {
+    AwsRequest, 
+    AwsServiceClient
+} = require("/Users/tkaye/Desktop/StitchSDKs/js/packages/server/services/aws/dist/cjs");
 
 const stitchClient = Stitch.initializeDefaultAppClient('stitchdocsexamples-pqwyr');
+for (user of stitchClient.auth.listUsers()) {
+    stitchClient.auth.removeUserWithId(user.id);
+}
 
 stitchClient.auth.loginWithCredential(new AnonymousCredential()).then(user => {
 	console.log("Successfully logged in with anonymous user " + user.id )
@@ -96,19 +99,25 @@ stitchClient.auth.loginWithCredential(new AnonymousCredential()).then(user => {
     setTimeout(function() {
         console.log('Logging out....');
         stitchClient.auth.logout().then(_ => {
-            itemsCollection.findOne().then(_ => {
-
-            }).catch(err => {
-                
-            })
+            try {
+                itemsCollection.findOne().then(_ => {
+                    console.log("*** FAIL: THIS SHOULDNT HAVE WORKED");
+                    process.exit(0);
+                }).catch(err => {
+                    console.log("Successfully failed with err: ", err.message);
+                    process.exit(0);
+                })  
+            } catch (err) {
+                console.log(`*** Failed to reject promise on unauthed request: ${err}`);
+                process.exit(0);
+            }
         }).catch(err => {
             console.log(`*** Failed to call logout with error: ${err}`);
-        process.exit(0);
+            process.exit(0);
         })
     }, 2000);
 
 }).catch(err => {
-    console.log("*** ERROR:" + err);
-    client.close();
+    console.log("*** ERROR: " + err);
     process.exit(0);
 })

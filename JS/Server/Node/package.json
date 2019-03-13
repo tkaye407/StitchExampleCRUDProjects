@@ -9,8 +9,8 @@
   "author": "Tyler KAye",
   "license": "ISC",
   "dependencies": {
-    "mongodb-stitch-server-sdk": "^4.2.0",
+    "mongodb-stitch-server-sdk": "^4.3.2",
     "mongodb-stitch-server-services-aws": "^4.3.2",
-    "mongodb-stitch-server-services-mongodb-remote": "^4.2.0"
+    "mongodb-stitch-server-services-mongodb-remote": "^4.3.2"
   }
 }
