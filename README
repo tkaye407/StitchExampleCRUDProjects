@@ -28,6 +28,10 @@ JavaScript:
 			An Angular app that contains buttons that execute certain functionality including: 
 			Basic Auth (login / logout), Mongo Queries, AWS Requests, and Stitch Function Requests.
 			Can point it to your local copy of the Stitch SDK if you want (top of app.component.ts)
+		React: npm start 
+			An Angular app that contains buttons that execute certain functionality including: 
+			Basic Auth (login / logout), Mongo Queries, AWS Requests, and Stitch Function Requests.
+			Working on being able to point it at a local copy of the StitchSDK but RN makes importing harder
 	Server: 
 		Node: node index.js
 			A node server that executes a few Mongo Queries, an AWS Request, a Stitch Function.  
