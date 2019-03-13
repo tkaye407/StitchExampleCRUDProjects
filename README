@@ -24,7 +24,7 @@ JavaScript:
 			Can point it to your local copy of the Stitch SDK if you want (top of html file)
 			Should have the developer console visible as this is where the application outputs the data
 			Functions are in a series of js files in the folder
-		Angular: ` ng serve --open `
+		Angular: `ng serve --open`
 			An Angular app that contains buttons that execute certain functionality including: 
 			Basic Auth (login / logout), Mongo Queries, AWS Requests, and Stitch Function Requests.
 			Can point it to your local copy of the Stitch SDK if you want (top of app.component.ts)
