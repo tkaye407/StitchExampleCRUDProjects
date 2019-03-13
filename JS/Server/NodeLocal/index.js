@@ -1,10 +1,9 @@
-const pathToServerSDK = "/Users/tkaye/Desktop/StitchSDKs/js/packages/server/sdk/dist/cjs";
 const {
     Stitch, 
     AnonymousCredential,
     RemoteMongoClient,
     BSON
-} = require(pathToServerSDK);
+} = require("/Users/tkaye/Desktop/StitchSDKs/js/packages/server/sdk/dist/cjs");
 
 const app = Stitch.initializeDefaultAppClient('stitchdocsexamples-pqwyr');
 
@@ -24,7 +23,8 @@ app.auth.loginWithCredential(new AnonymousCredential()).then(user => {
     		console.log("No matching document found");
     	}
     }, (error) => {
-    	alert("Error Finding Document: " + error);
+        console.log("*** Error Finding Document: " + error);
+        process.exit(0);
     });
 
     let filter2 ={name: {$regex: /leg/}}
@@ -35,8 +35,8 @@ app.auth.loginWithCredential(new AnonymousCredential()).then(user => {
     		console.log("No matching document found");
     	}
     }, (error) => {
-    	alert("Error Finding Document: " + error);
-    });
+        console.log("*** Error Finding Document: " + error);
+        process.exit(0);    });
 
     let filter3 ={name: {$regsex: new BSON.BSONRegExp("leg", "i")}}
     itemsCollection.find(filter3, {limit: 1}).first().then(result => {
@@ -47,8 +47,8 @@ app.auth.loginWithCredential(new AnonymousCredential()).then(user => {
     	}
     	
     }).catch(error => {
-        console.log("Error Finding Document: " + error);
-    });
+        console.log("*** Error Finding Document: " + error);
+        process.exit(0);    });
 
     try {
         app.auth.switchToUserWithId("a")

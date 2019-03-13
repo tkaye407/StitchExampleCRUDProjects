@@ -18,9 +18,23 @@ Android:
 
 
 JavaScript: 
-	This application is just an HTML file that has several buttons that run the respective function and output to the console.
-	1. Double click on crud.html and clock on the buttons
-	2. Should have the developer console visible as this is where the application outputs the data
-	3. The functions are in the respective javascript files: 
-		insert.js / find.js / update.js / delete.js / auth.js / external_services.js
-	4. crud_local.html uses a local version of the Browser SDK.
+	Browser: 
+		CRUD: 
+			An HTML / JS file that has several buttons that run the respective function and output to the console. 
+			Can point it to your local copy of the Stitch SDK if you want (top of html file)
+			Should have the developer console visible as this is where the application outputs the data
+			Functions are in a series of js files in the folder
+		Angular: ` ng serve --open `
+			This contains a basic Angular app that shows basic Auth, Mongo Queries, AWs Request, and Stitch Functions
+			Can point it to your local copy of the Stitch SDK if you want (top of app.component.ts)
+	Server: 
+		Node: ` node index.js `
+			A node server that executes a few Mongo Queries, an AWS Request, a Stitch Function, and a few other operations. 
+			Can point it to your local copy of the Stitch SDK if you want (top of index.js)
+	ReactNative: 
+		PureRN: ` react-native run-android ` or ` react-native run-ios `
+			A react native app that builds an ios and android app that has a few buttons which enable you to Login / Logout
+			Issue Mongo Queries, AWS Requests, and Stitch Functions Requests. 
+			Working on being able to point it at a local copy of the StitchSDK but RN makes importing harder
+		ExpoRN: 
+			A simpler react native app built using expo to ease the development process. 
