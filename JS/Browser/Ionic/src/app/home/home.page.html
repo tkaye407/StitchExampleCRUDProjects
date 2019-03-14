@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Ionic Sample App For MongoDB Stitch
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <h1> Below is the result: </h1>
+  <h3> {{ result }} </h3>
+  <ion-button (click)='callLogin()'> Login </ion-button>
+  <ion-button (click)='callLogout()'> Logout </ion-button>
+  <ion-button (click)='callFunc()'> Stitch func() </ion-button>
+  <ion-button (click)='callAws()'> AWS GetObject() </ion-button>
+  <ion-button (click)='callMongo()'> Mongo findOne() </ion-button>
+</ion-content>

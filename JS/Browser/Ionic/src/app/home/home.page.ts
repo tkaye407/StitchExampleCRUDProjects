@@ -1,51 +1,44 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Stitch, 
-  AnonymousCredential,
-  UserPasswordCredential,
-  RemoteMongoClient, 
-  BSON,
-  StitchAppClient, 
-  GoogleCredential,
-} from "/Users/tkaye/Desktop/StitchSDKs/js/packages/browser/sdk/dist/cjs";
-
-import {
-  AwsServiceClient, 
-  AwsRequest
-} from "/Users/tkaye/Desktop/StitchSDKs/js/packages/browser/services/aws/dist/cjs";
-
 // import { Stitch, 
 //   AnonymousCredential,
 //   UserPasswordCredential,
 //   RemoteMongoClient, 
 //   BSON,
-//   StitchAppClient
-// } from 'mongodb-stitch-browser-sdk';
+//   StitchAppClient, 
+//   GoogleCredential,
+// } from "/Users/tkaye/Desktop/StitchSDKs/js/packages/browser/sdk/dist/cjs";
 
 // import {
 //   AwsServiceClient, 
 //   AwsRequest
-// } from 'mongodb-stitch-browser-services-aws';
+// } from "/Users/tkaye/Desktop/StitchSDKs/js/packages/browser/services/aws/dist/cjs";
+
+import { Stitch, 
+  AnonymousCredential,
+  UserPasswordCredential,
+  RemoteMongoClient, 
+  BSON,
+  StitchAppClient
+} from 'mongodb-stitch-browser-sdk';
+
+import {
+  AwsServiceClient, 
+  AwsRequest
+} from 'mongodb-stitch-browser-services-aws';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
 })
-export class AppComponent implements OnInit {
+export class HomePage implements OnInit {
   stitchClient: StitchAppClient;
-  title = 'Sample';
-  funcResult = "No Function Result";
-  awsResult = "No AWS Result";
-  mongoResult = "No Mongo Result";
-  loginResult = "No Login Result";
-  logoutResult = "No Logout Result";
+  result = "No results"
 
   constructor() { }
 
   ngOnInit() {
-    this.title = "MongoDB Stitch Sample App"
-
     const sampleDoc1 = '{ "int32": { "$numberInt": "10" } }';
     const ejs1 = BSON.EJSON.parse(sampleDoc1);
     console.log(ejs1)
@@ -57,51 +50,49 @@ export class AppComponent implements OnInit {
     this.stitchClient = Stitch.initializeDefaultAppClient("stitchdocsexamples-pqwyr");
   }
 
-  login() {
+  callLogin() {
     this.stitchClient.auth.loginWithCredential(new AnonymousCredential()).then(user => {
-      this.loginResult = `Successfully logged in user with id: ${user.id}`;
-      this.logoutResult = "NA";
+      this.result = `Successfully logged in user with id: ${user.id}`;
     }).catch(err => {
-      this.loginResult = `Failed to login anonymous user with err: ${err}`
+      this.result = `Failed to login anonymous user with err: ${err}`
     })
   }
 
-  logout() {
+  callLogout() {
     this.stitchClient.auth.logout().then(_ => {
-      this.logoutResult = `Successfully logged out`;
-      this.loginResult = "NA";
+      this.result = `Successfully logged out`;
     }).catch(err => {
-      this.logoutResult = `Failed to logout with err: ${err}`
+      this.result = `Failed to logout with err: ${err}`
     })
   }
 
   callMongo() {
     let mongoClient = this.stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
     mongoClient.db("store").collection("items").findOne().then(result => {
-      this.mongoResult = `Successfully called mongo findOne(): ${JSON.stringify(result)}`; 
+      this.result = `Successfully called mongo findOne(): ${JSON.stringify(result)}`; 
     }).catch(err => {
-      this.mongoResult = `Failed to call mongo findOne() with error: ${err}`;
+      this.result = `Failed to call mongo findOne() with error: ${err}`;
     })
   }
 
-  callAWS() {
+  callAws() {
     let awsClient = this.stitchClient.getServiceClient(AwsServiceClient.factory, "myAWSService");
 
     const args = { Bucket: "tklivebucket",  Key: "example2" };
 
     const request = new AwsRequest.Builder().withService("s3").withAction("GetObject").withArgs(args);
     awsClient.execute(request.build()).then(res => {
-      this.awsResult = `AWS Result: ${JSON.stringify(res)}`;
+      this.result = `AWS Result: ${JSON.stringify(res)}`;
     }).catch(err => {
-      this.awsResult = `AWS call failed with error: ${err}`;
+      this.result = `AWS call failed with error: ${err}`;
     })
   }
 
   callFunc() {
     this.stitchClient.callFunction("getString", ["string1", "otherString2"]).then(result => {
-      this.funcResult = `Successfully called stitch function: ${result}`; 
+      this.result = `Successfully called stitch function: ${result}`; 
     }).catch(err => {
-      this.funcResult = `Failed to call stitch function with error: ${err}`;
+      this.result = `Failed to call stitch function with error: ${err}`;
     })
   }
 }

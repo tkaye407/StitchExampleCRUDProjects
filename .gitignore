@@ -21,6 +21,7 @@ iOS/Pods/
 
 JS/Browser/Angular/node_modules/
 JS/Browser/React/node_modules/
+JS/Browser/Ionic/node_modules/
 JS/ReactNative/PureRN/node_modules/
 JS/ReactNative/PureRN/android/
 JS/ReactNative/PureRN/iOS/
