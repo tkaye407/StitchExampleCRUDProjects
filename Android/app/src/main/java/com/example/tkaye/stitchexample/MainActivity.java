@@ -1,5 +1,8 @@
 package com.example.tkaye.stitchexample;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.widget.Button;
 
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +12,7 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 // Stitch-Related Imports
 import com.google.android.gms.tasks.Tasks;
@@ -18,6 +22,8 @@ import com.mongodb.stitch.android.core.StitchAppClient;
 import com.mongodb.stitch.android.services.mongodb.remote.RemoteFindIterable;
 import com.mongodb.stitch.core.auth.providers.anonymous.AnonymousCredential;
 import com.mongodb.stitch.core.auth.providers.userpassword.UserPasswordCredential;
+import com.mongodb.stitch.core.services.mongodb.remote.ChangeEvent;
+import com.mongodb.stitch.core.services.mongodb.remote.ChangeStream;
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteDeleteResult;
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteInsertManyResult;
 import com.mongodb.stitch.core.services.mongodb.remote.RemoteInsertOneResult;
@@ -41,15 +47,28 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.codecs.BsonDocumentCodec;
+import org.bson.types.ObjectId;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    Button sendMessageButton;
-    Button userpassLoginButton;
-    Button anonLoginButton;
-    Button removeAllUsersButton;
+    // Auth Buttons
+    Button logoutButton, userpassLoginButton, anonLoginButton, removeAllUsersButton;
+
+    // MongoButtons
+    Button  insertOneButton, insertManyButton,
+            findOneButton, findManyButton,
+            updateOneButton, updateManyButton,
+            deleteOneButton, deleteManyButton,
+            watchButton, aggregateButton;
+
+    // Other Services
+    Button sesButton, twilioButton;
+
     private StitchAppClient stitchClient;
     private RemoteMongoClient mongoClient;
     private RemoteMongoCollection itemsCollection;
@@ -58,111 +77,181 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sendMessageButton = (Button) findViewById(R.id.sendMessageButton);
-        anonLoginButton = (Button) findViewById(R.id.anonLoginButton);
-        userpassLoginButton = (Button) findViewById(R.id.userpassLoginButton);
+
+        // Auth Buttons
+        anonLoginButton      = (Button) findViewById(R.id.anonLoginButton);
+        userpassLoginButton  = (Button) findViewById(R.id.userpassLoginButton);
         removeAllUsersButton = (Button) findViewById(R.id.removeAllUsersButton);
+        logoutButton         = (Button) findViewById(R.id.logoutButton);
 
+        // MongoButtons
+        findOneButton    = (Button) findViewById(R.id.findOneButton);
+        findManyButton   = (Button) findViewById(R.id.findManyButton);
+        insertOneButton  = (Button) findViewById(R.id.insertOneButton);
+        insertManyButton = (Button) findViewById(R.id.insertManyButton);
+        updateOneButton  = (Button) findViewById(R.id.updateOneButton);
+        updateManyButton = (Button) findViewById(R.id.updateManyButton);
+        deleteOneButton  = (Button) findViewById(R.id.deleteOneButton);
+        deleteManyButton = (Button) findViewById(R.id.deleteManyButton);
+        watchButton      = (Button) findViewById(R.id.watchButton);
+        aggregateButton  = (Button) findViewById(R.id.aggregateButton);
 
-//        anonymousLogin();
+        // Other service buttons
+        sesButton = (Button) findViewById(R.id.sesButton);
+        twilioButton = (Button) findViewById(R.id.twilioButton);
 
         stitchClient = Stitch.getDefaultAppClient();
         mongoClient = stitchClient.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
         itemsCollection = mongoClient.getDatabase("store").getCollection("items");
 
 
-
-
-
-
-
-
-
         anonLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("app", String.format("num users before: %d",
-                        stitchClient.getAuth().listUsers().size()));
-                try {
-                    Tasks.await(stitchClient.getAuth().loginWithCredential(new AnonymousCredential()));
-                } catch (Exception e) {
-
-                }
-                Log.d("app", String.format("num users after: %d",
-                        stitchClient.getAuth().listUsers().size()));
-                listUsers();
+                anonymousLogin();
             }
         });
 
-      removeAllUsersButton.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-          removeAllUsers();
-          Log.d("app", String.format("num users after: %d",
-                  stitchClient.getAuth().listUsers().size()));
-          listUsers();
-        }
-      });
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                logout();
+            }
+        });
+
+
+        removeAllUsersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+              removeAllUsers();
+            }
+        });
 
         userpassLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("app", String.format("num users before=: %d",
-                        stitchClient.getAuth().listUsers().size()));
-
-              // Login with Anonymous credentials and handle the result
-              stitchClient.getAuth().loginWithCredential(new UserPasswordCredential("tkaye407@gmail.com", "password")).addOnCompleteListener(new OnCompleteListener<StitchUser>() {
-                @Override
-                public void onComplete(@NonNull final Task<StitchUser> task) {
-                  if (task.isSuccessful()) {
-                    Log.d("app", String.format("num users after: %d",
-                            stitchClient.getAuth().listUsers().size()));
-                    listUsers();
-                  } else {
-                    Log.e("app", "failed to log in", task.getException());
-                  }
-                }
-              });
+               userPassLogin();
             }
         });
 
-        sendMessageButton.setOnClickListener(new View.OnClickListener() {
+        logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // insertOne();
-                // insertMany();
+                newAlertWithMessageOnUIThread("logout", "success");
+            }
+        });
 
-                // findOne();
-                // findMany();
+        // Mongo Actions
+        findOneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                findOne();
+            }
+        });
 
-                // deleteOne();
-                // deleteMany();
+        findManyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                findMany();
+            }
+        });
 
+        insertOneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                insertOne();
+            }
+        });
+
+        insertManyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                insertMany();
+            }
+        });
+
+        deleteOneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteOne();
+            }
+        });
+
+        deleteManyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteMany();
+            }
+        });
+
+        updateOneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 // updateOneAddField();
-                // updateOnePush();
+                updateOnePush();
                 // updateOneUpsert();
-                // updateMany();
+            }
+        });
 
-                 aggregate();
+        updateManyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                updateMany();
+            }
+        });
 
-                // sendTwilioSMS();
-                // sendSESEmail();
+        watchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                watch();
+            }
+        });
 
-                // anonymousLogin();
+        aggregateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                aggregate();
+            }
+        });
+
+        // Other Services:
+        sesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendSESEmail();
+            }
+        });
+
+        twilioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendTwilioSMS();
             }
         });
     }
 
-    public void listUsers() {
-        for (StitchUser user : stitchClient.getAuth().listUsers()) {
-            Log.d("app", String.format("%s %s", user.getId(), user.getLoggedInProviderType()));
-        }
-    }
+    public void newAlertWithMessageOnUIThread(String funcName, String result) {
+        Context context = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("app", String.format("Alert for func %s with result: %s", funcName, result));
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+                builder1.setMessage(funcName + ": " + result);
+                builder1.setCancelable(true);
 
-    public void removeAllUsers() {
-        for (StitchUser user: stitchClient.getAuth().listUsers()) {
-            stitchClient.getAuth().removeUserWithId(user.getId());
-        }
+                builder1.setPositiveButton(
+                        "Ok",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+                AlertDialog alert11 = builder1.create();
+                alert11.show();
+            }
+        });
     }
 
 
@@ -186,10 +275,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<RemoteInsertOneResult> task) {
                 if (task.isSuccessful()) {
-                    Log.d("app", String.format("successfully inserted item with id %s",
-                            task.getResult().getInsertedId()));
+                    newAlertWithMessageOnUIThread("insertOne", task.getResult().getInsertedId().toString());
                 } else {
-                    Log.e("app", "failed to insert document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("insertOne", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -215,12 +303,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<RemoteInsertManyResult> task) {
                 if (task.isSuccessful()) {
-                    Log.d("app",
-                            String.format("successfully inserted %d items with ids: %s",
-                                    task.getResult().getInsertedIds().size(),
-                                    task.getResult().getInsertedIds().toString()));
+                    newAlertWithMessageOnUIThread("insertMany", String.format("successfully inserted %d items with ids: %s",
+                            task.getResult().getInsertedIds().size(),
+                            task.getResult().getInsertedIds().toString()));
                 } else {
-                    Log.e("app", "failed to inserts document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("insertMany", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -240,12 +327,12 @@ public class MainActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Document> task) {
                 if (task.isSuccessful()) {
                     if (task.getResult() == null) {
-                        Log.d("app", "Could not find any matching documents");
+                        newAlertWithMessageOnUIThread("findOne", "Could not find any matching documents");
                     } else {
-                        Log.d("app", String.format("successfully found document: %s", task.getResult().toString()));
+                        newAlertWithMessageOnUIThread("findOne", task.getResult().toJson());
                     }
                 } else {
-                    Log.e("app", "failed to find document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("findOne", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -271,13 +358,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<List<Document>> task) {
                 if (task.isSuccessful()) {
+                    String res = "";
                     List<Document> items = task.getResult();
-                    Log.d("app", String.format("successfully found %d documents", items.size()));
+                    res += String.format("successfully found %d documents [", items.size());
                     for (Document item : items) {
-                        Log.d("app", String.format("successfully found:  %s", item.toString()));
+                        res += item.toString() + ", ";
                     }
+                    res += "]";
+                    newAlertWithMessageOnUIThread("findMany", res);
                 } else {
-                    Log.e("app", "failed to find documents with: ", task.getException());
+                    newAlertWithMessageOnUIThread("findMany", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -295,10 +385,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<RemoteDeleteResult> task) {
                 if (task.isSuccessful()) {
-                    long numDeleted = task.getResult().getDeletedCount();
-                    Log.d("app", String.format("successfully deleted %d documents", numDeleted));
+                    newAlertWithMessageOnUIThread("deleteOne", String.format("successfully deleted %d documents", task.getResult().getDeletedCount()));
                 } else {
-                    Log.e("app", "failed to delete document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("deleteOne", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -313,10 +402,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<RemoteDeleteResult> task) {
                 if (task.isSuccessful()) {
-                    long numDeleted = task.getResult().getDeletedCount();
-                    Log.d("app", String.format("successfully deleted %d documents", numDeleted));
+                    newAlertWithMessageOnUIThread("deleteMany", String.format("successfully deleted %d documents", task.getResult().getDeletedCount()));
                 } else {
-                    Log.e("app", "failed to delete document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("deleteMany", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -343,9 +431,9 @@ public class MainActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     long numMatched = task.getResult().getMatchedCount();
                     long numModified = task.getResult().getModifiedCount();
-                    Log.d("app", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
+                    newAlertWithMessageOnUIThread("updateOneAddField", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
                 } else {
-                    Log.e("app", "failed to update document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("updateOneAddField", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -368,9 +456,9 @@ public class MainActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     long numMatched = task.getResult().getMatchedCount();
                     long numModified = task.getResult().getModifiedCount();
-                    Log.d("app", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
+                    newAlertWithMessageOnUIThread("updateOnePush", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
                 } else {
-                    Log.e("app", "failed to update document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("updateOnePush", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -390,14 +478,14 @@ public class MainActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     if (task.getResult().getUpsertedId() != null) {
                         String upsertedId = task.getResult().getUpsertedId().toString();
-                        Log.d("app", String.format("successfully upserted document with id: %s", upsertedId));
+                        newAlertWithMessageOnUIThread("updateOneUpsert",  String.format("successfully upserted document with id: %s", upsertedId));
                     } else {
                         long numMatched = task.getResult().getMatchedCount();
                         long numModified = task.getResult().getModifiedCount();
-                        Log.d("app", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
+                        newAlertWithMessageOnUIThread("updateOneUpsert", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
                     }
                 } else {
-                    Log.e("app", "failed to update document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("updateOneUpsert", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -414,9 +502,9 @@ public class MainActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     long numMatched = task.getResult().getMatchedCount();
                     long numModified = task.getResult().getModifiedCount();
-                    Log.d("app", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
+                    newAlertWithMessageOnUIThread("updateMany", String.format("successfully matched %d and modified %d documents", numMatched, numModified));
                 } else {
-                    Log.e("app", "failed to update document with: ", task.getException());
+                    newAlertWithMessageOnUIThread("updateMany", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
@@ -445,18 +533,113 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<List<Document>> task) {
                 if (task.isSuccessful()) {
+                    String res = "";
                     List<Document> items = task.getResult();
-                    Log.d("app", String.format("%d aggregation results", items.size()));
+                    res += String.format("successfully aggregated %d documents [", items.size());
                     for (Document item : items) {
-                        Log.d("app", String.format("aggregation result:  %s", item.toString()));
+                        res += item.toString() + ", ";
                     }
+                    res += "]";
+                    newAlertWithMessageOnUIThread("aggregate", res);
                 } else {
-                    Log.e("app", "failed to perform aggregation with: ", task.getException());
+                    newAlertWithMessageOnUIThread("aggregate", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });
     }
 
+    /***************************************************************************
+     * WATCH                                                                   *
+     ***************************************************************************/
+    private void blockAndHandleChangeEvent(ChangeStream<Task<ChangeEvent>, Document> changeStream) {
+        try {
+            changeStream.nextEvent().addOnCompleteListener(new OnCompleteListener<ChangeEvent>() {
+                @Override
+                public void onComplete(@NonNull Task<ChangeEvent> task) {
+                    if (task.isSuccessful()) {
+                        ChangeEvent changeEvent = task.getResult();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                newAlertWithMessageOnUIThread("watch", changeEvent.getOperationType().name());
+                            }
+                        });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                newAlertWithMessageOnUIThread("watch", String.format("failed change event with err: %s", task.getException().getLocalizedMessage()));
+
+                            }
+                        });
+                    }
+                    blockAndHandleChangeEvent(changeStream);
+                }
+            });
+        } catch (Exception e) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    newAlertWithMessageOnUIThread("watch", String.format("failed try/catch with err: %s", e.getLocalizedMessage()));
+                }
+            });
+            blockAndHandleChangeEvent(changeStream);
+        }
+
+    }
+
+    public void watch(){
+        List<ObjectId> ids = new ArrayList<>();
+        RemoteFindIterable findResults = itemsCollection.find().projection(new Document().append("_id", 1));
+
+        Task <List<Document>> itemsTask = findResults.into(new ArrayList<Document>());
+        itemsTask.addOnCompleteListener(new OnCompleteListener <List<Document>> () {
+            @Override
+            public void onComplete(@NonNull Task<List<Document>> task) {
+                if (task.isSuccessful()) {
+                    List<Document> items = task.getResult();
+                    for (Document item: items) {
+                        ids.add(item.getObjectId("_id"));
+                    }
+
+                    ObjectId[] idsArr = new ObjectId[ids.size()];
+                    idsArr = ids.toArray(idsArr);
+                    Task<ChangeStream<Task<ChangeEvent>, Document>> cs = itemsCollection.watch(idsArr);
+                    cs.addOnCompleteListener(new OnCompleteListener<ChangeStream<Task<ChangeEvent>, Document>>() {
+                        @Override
+                        public void onComplete(@NonNull Task<ChangeStream<Task<ChangeEvent>, Document>> task) {
+                            if (task.isSuccessful()) {
+                                ChangeStream<Task<ChangeEvent>, Document> changeStream = task.getResult();
+                                newAlertWithMessageOnUIThread("watch", "Successfully set up change stream");
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        while(true) {
+                                            try {
+                                                ChangeEvent<Document> changeEvent = Tasks.await(changeStream.nextEvent());
+                                                String changeEventStr = String.format("Change event of type %s with full doc %s", changeEvent.getOperationType(), changeEvent.getDocumentKey().toJson());
+                                                newAlertWithMessageOnUIThread("watch", changeEventStr);
+                                            } catch (ExecutionException e) {
+                                                // The Task failed, this is the same exception you'd get in a non-blocking failure handler.
+                                                newAlertWithMessageOnUIThread("watch", String.format("failed change event with ExecutionException: %s", e.getLocalizedMessage()));
+                                            } catch (Exception e) {
+                                                // Any other exception occurred while waiting for the task to complete.
+                                                newAlertWithMessageOnUIThread("watch", String.format("failed change event with other Exception: %s", e.getLocalizedMessage()));
+                                            }
+                                        }
+                                    }
+                                }).start();
+                            } else {
+                                newAlertWithMessageOnUIThread("watch", String.format("failed initial watch() with err: %s", task.getException().getLocalizedMessage()));
+                            }
+                        }
+                    });
+                } else {
+                    Log.e("app", "failed to find documents with: ", task.getException());
+                }
+            }
+        });
+    }
 
     /***************************************************************************
      * AUTHENTICATION                                                          *
@@ -470,12 +653,55 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull final Task<StitchUser> task) {
                 if (task.isSuccessful()) {
-                    Log.d("myApp", String.format(
-                            "logged in as user %s with provider %s",
-                            task.getResult().getId(),
-                            task.getResult().getLoggedInProviderType()));
+                    newAlertWithMessageOnUIThread("anonymousLogin", String.format("logged in as user %s with provider %s", task.getResult().getId(), task.getResult().getLoggedInProviderType()));
                 } else {
-                    Log.e("myApp", "failed to log in", task.getException());
+                    newAlertWithMessageOnUIThread("anonymousLogin", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
+                }
+            }
+        });
+    }
+
+    public void logout() {
+        // Get the default AppClient
+        StitchAppClient stitchClient = Stitch.getDefaultAppClient();
+
+        // Login with Anonymous credentials and handle the result
+        stitchClient.getAuth().logout().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    newAlertWithMessageOnUIThread("logout", "success");
+                } else {
+                    newAlertWithMessageOnUIThread("logout", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
+                }
+            }
+        });
+    }
+
+    public void listUsers() {
+        for (StitchUser user : stitchClient.getAuth().listUsers()) {
+            Log.d("app", String.format("%s %s", user.getId(), user.getLoggedInProviderType()));
+        }
+    }
+
+    public void removeAllUsers() {
+        for (StitchUser user: stitchClient.getAuth().listUsers()) {
+            stitchClient.getAuth().removeUserWithId(user.getId());
+        }
+    }
+
+    public void userPassLogin() {
+        // Get the default AppClient
+        StitchAppClient stitchClient = Stitch.getDefaultAppClient();
+
+        // Login with Anonymous credentials and handle the result
+        stitchClient.getAuth().loginWithCredential(new UserPasswordCredential("tkaye407@gmail.com", "password")).addOnCompleteListener(new OnCompleteListener<StitchUser>() {
+            @Override
+            public void onComplete(@NonNull final Task<StitchUser> task) {
+                if (task.isSuccessful()) {
+                    newAlertWithMessageOnUIThread("logout", String.format("num users after: %d", stitchClient.getAuth().listUsers().size()));
+                } else {
+                    newAlertWithMessageOnUIThread("logout", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
                 }
             }
         });

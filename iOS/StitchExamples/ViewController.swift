@@ -26,11 +26,34 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Set the stitch variables declared above for use below
-        mongoClient = stitchClient.serviceClient(fromFactory: remoteMongoClientFactory, withName: "mongodb-atlas")
-        itemsCollection = mongoClient?.db("store").collection("items")
-        // Do any additional setup after loading the view, typically from a nib.
+        do {
+            mongoClient = try stitchClient.serviceClient(fromFactory: remoteMongoClientFactory, withName: "mongodb-atlas")
+            itemsCollection = mongoClient?.db("store").collection("items")
+            // Do any additional setup after loading the view, typically from a nib.
+        } catch (let err) {
+            print("Failed Init with \(err)")
+        }
     }
     
+    @IBAction func watchAllDocs(_ sender: Any) {
+        let stitchClient = Stitch.defaultAppClient!;
+        
+        let options: RemoteFindOptions = RemoteFindOptions.init(projection: ["_id": 1]);
+        itemsCollection?.find(Document(), options: options).toArray() { result in
+            switch result {
+            case .success(let ids):
+                var watchIds: [ObjectId] = [];
+                for id in ids {
+                    if let objId = id["_id"] as? ObjectId {
+                        watchIds.append(objId)
+                    }
+                }
+                print(watchIds)
+            case .failure(let error):
+                print("Failed getting all with error \(error)")
+            }
+        }
+    }
     @IBAction func loginClicked(_ sender: Any) {
         // Get the default AppClient
         let stitchClient = Stitch.defaultAppClient!;
@@ -161,7 +184,8 @@ class ViewController: UIViewController {
             case .failure(let error):
                 DispatchQueue.main.async() {
                     self.output.text = "Failed to Insert Document with Error: \(error)";
-                }            }
+                }
+            }
         }
     }
     

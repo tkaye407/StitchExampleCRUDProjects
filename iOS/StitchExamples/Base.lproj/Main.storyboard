@@ -115,7 +115,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6hV-YN-43C">
-                                <rect key="frame" x="74" y="427" width="106" height="41"/>
+                                <rect key="frame" x="16" y="421" width="106" height="41"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.2258156382" green="0.70535136009999999" blue="0.36553562509999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <state key="normal" title="CallFunction()">
@@ -167,7 +167,7 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cdV-Cx-20e">
-                                <rect key="frame" x="188" y="427" width="106" height="41"/>
+                                <rect key="frame" x="134" y="421" width="106" height="41"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="0.2258156382" green="0.70535136009999999" blue="0.36553562509999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <state key="normal" title="AWSRequest">
@@ -186,6 +186,17 @@
                                 </state>
                                 <connections>
                                     <action selector="logoutClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="i7O-4e-i48"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zEv-51-aBK">
+                                <rect key="frame" x="253" y="421" width="106" height="41"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.2258156382" green="0.70535136009999999" blue="0.36553562509999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Watch All Docs">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="watchAllDocs:" destination="BYZ-38-t0r" eventType="touchUpInside" id="PlW-bY-5tr"/>
                                 </connections>
                             </button>
                         </subviews>

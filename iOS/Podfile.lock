@@ -1,49 +1,65 @@
 PODS:
   - mongo-embedded-c-driver (1.13.0-4.0.4)
-  - MongoSwift (0.0.7):
+  - mongo_embedded (4.0.4)
+  - mongoc_embedded (4.0.4):
+    - mongo-embedded-c-driver (~> 1.13.0-4.0.4)
+    - mongo_embedded (~> 4.0.4)
+  - MongoMobile (0.0.7):
+    - mongo_embedded (~> 4.0.4)
+    - mongoc_embedded (~> 4.0.4)
+    - MongoSwift (~> 0.0.9)
+  - MongoSwift (0.0.9):
     - mongo-embedded-c-driver (~> 1.13.0-4.0.0)
-  - StitchAWSService (4.1.2):
-    - StitchCore (= 4.1.2)
-    - StitchCoreAWSService (= 4.1.2)
-  - StitchCore (4.1.2):
-    - StitchCoreSDK (= 4.1.2)
-  - StitchCoreAWSService (4.1.2):
-    - StitchCoreSDK (= 4.1.2)
-  - StitchCoreRemoteMongoDBService (4.1.2):
-    - StitchCoreSDK (= 4.1.2)
-  - StitchCoreSDK (4.1.2):
-    - MongoSwift (= 0.0.7)
-  - StitchCoreTwilioService (4.1.2):
-    - StitchCoreSDK (= 4.1.2)
-  - StitchRemoteMongoDBService (4.1.2):
-    - StitchCore (= 4.1.2)
-    - StitchCoreRemoteMongoDBService (= 4.1.2)
-  - StitchSDK (4.1.2):
-    - StitchSDK/StitchSDK (= 4.1.2)
-  - StitchSDK/StitchAWSService (4.1.2):
-    - StitchAWSService (= 4.1.2)
-  - StitchSDK/StitchRemoteMongoDBService (4.1.2):
-    - StitchRemoteMongoDBService (= 4.1.2)
-  - StitchSDK/StitchSDK (4.1.2):
+  - StitchAWSService (5.0.0):
+    - StitchCore (= 5.0.0)
+    - StitchCoreAWSService (= 5.0.0)
+  - StitchCore (5.0.0):
+    - StitchCoreSDK (= 5.0.0)
+  - StitchCoreAWSService (5.0.0):
+    - StitchCoreSDK (= 5.0.0)
+  - StitchCoreLocalMongoDBService (5.0.0):
+    - MongoMobile (= 0.0.7)
+    - StitchCoreSDK (= 5.0.0)
+  - StitchCoreRemoteMongoDBService (5.0.0):
+    - StitchCoreLocalMongoDBService (= 5.0.0)
+    - StitchCoreSDK (= 5.0.0)
+  - StitchCoreSDK (5.0.0):
+    - MongoSwift (= 0.0.9)
+  - StitchCoreTwilioService (5.0.0):
+    - StitchCoreSDK (= 5.0.0)
+  - StitchRemoteMongoDBService (5.0.0):
+    - StitchCore (= 5.0.0)
+    - StitchCoreRemoteMongoDBService (= 5.0.0)
+  - StitchSDK (5.0.0):
+    - StitchSDK/StitchSDK (= 5.0.0)
+  - StitchSDK/StitchAWSService (5.0.0):
+    - StitchAWSService (= 5.0.0)
+  - StitchSDK/StitchRemoteMongoDBService (5.0.0):
+    - StitchRemoteMongoDBService (= 5.0.0)
+  - StitchSDK/StitchSDK (5.0.0):
     - StitchSDK/StitchRemoteMongoDBService
-  - StitchSDK/StitchTwilioService (4.1.2):
-    - StitchTwilioService (= 4.1.2)
-  - StitchTwilioService (4.1.2):
-    - StitchCore (= 4.1.2)
-    - StitchCoreTwilioService (= 4.1.2)
+  - StitchSDK/StitchTwilioService (5.0.0):
+    - StitchTwilioService (= 5.0.0)
+  - StitchTwilioService (5.0.0):
+    - StitchCore (= 5.0.0)
+    - StitchCoreTwilioService (= 5.0.0)
 
 DEPENDENCIES:
-  - StitchSDK (= 4.1.2)
-  - StitchSDK/StitchAWSService (= 4.1.2)
-  - StitchSDK/StitchTwilioService (= 4.1.2)
+  - StitchSDK (= 5.0.0)
+  - StitchSDK/StitchAWSService (= 5.0.0)
+  - StitchSDK/StitchTwilioService (= 5.0.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - mongo-embedded-c-driver
+    - mongo_embedded
+    - mongoc_embedded
+    - MongoMobile
     - MongoSwift
     - StitchAWSService
     - StitchCore
     - StitchCoreAWSService
+    - StitchCoreLocalMongoDBService
     - StitchCoreRemoteMongoDBService
     - StitchCoreSDK
     - StitchCoreTwilioService
@@ -53,17 +69,21 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   mongo-embedded-c-driver: b46360baa15fc142baae80628822f26663220bde
-  MongoSwift: de22baca5a59aef44de44e07ee9adb8c4f59c5ee
-  StitchAWSService: 21dae7c1efb076261aa1b26727502dec7b5540bd
-  StitchCore: 4bd4ef2780a2e13747c91c33d35ce91fb9b9db34
-  StitchCoreAWSService: 71c01f317146c546dfdbe21686dc75c62017d837
-  StitchCoreRemoteMongoDBService: 9c007ee125ac33322d501d2e97c0cdc0e1d80aed
-  StitchCoreSDK: 93b81e6903be57b4f633129ae374f440891680e4
-  StitchCoreTwilioService: 96c4672f4c9c7f23679e78c1a0b7610bf12e0591
-  StitchRemoteMongoDBService: ca025791227348d5c00e2f52e34ff7594cc1d84e
-  StitchSDK: efda96c0cd5546523bb5ec64deb365ef4aaa954a
-  StitchTwilioService: a04df53fd117996ad17736a7cb00385e00ec30a9
+  mongo_embedded: e413134eb6b60544e7278add03007f8fe384a00c
+  mongoc_embedded: 41aadbb756b07070d6f0471192a84750cb42c580
+  MongoMobile: 6059b76325afe5fbb1072ae0fe47addc122591c6
+  MongoSwift: c7420b38a7e223439667f8c50aefada29c270df8
+  StitchAWSService: bbbeec348b41e6a8ba17f93d96bdaa334026db8a
+  StitchCore: d865978249f7a1d9c47227c8b8b79abfd486e8ab
+  StitchCoreAWSService: a1266c63e47ff202e77d683ae547f2daa1205c99
+  StitchCoreLocalMongoDBService: 1bbf70c8ae412be7d4e5747d72352ab74b0e97ef
+  StitchCoreRemoteMongoDBService: 438c2c86e7cfbbaa4bbabf1772e5c30aa4d13bc1
+  StitchCoreSDK: e5adeeea0589eba4b4d6fc956ffdff437bf477cb
+  StitchCoreTwilioService: 01ac0fd3f4a91bd08b03ed9c9544c0866f722f86
+  StitchRemoteMongoDBService: 71c24bb37631563d223510e0cfcc71aad97af323
+  StitchSDK: a98577d9f03f91c2b44c7cd9e58e74f38e469b1f
+  StitchTwilioService: 0b9a18d1d3c88ff14cd19cffa1488323ac4af23a
 
-PODFILE CHECKSUM: 63e2e228ada6f16dac382e3d112286289c8ab7a4
+PODFILE CHECKSUM: f69c29f4690794945858dc0f964ced1d1277caa9
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.6.0.beta.2
