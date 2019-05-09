@@ -10,11 +10,11 @@ function deleteOne() {
 }
 
 function deleteMany() {
-	const filterDoc = {reviews: {$size: 0}};
+	const filterDoc = {};
 
 	itemsCollection.deleteMany(filterDoc).then(result => {
 		console.log("Successfully deleted " + result.deletedCount + " item(s).");
-	}, (error) => {
-	    alert("Error Deleting Documents: " + error);
+	}).catch(error => {
+	    alert("Error Deleting Documentss (this is being caught by promise rejection) " + error);
 	});
 }

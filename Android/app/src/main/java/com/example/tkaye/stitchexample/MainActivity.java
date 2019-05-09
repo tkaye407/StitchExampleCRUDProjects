@@ -47,8 +47,13 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.mongodb.stitch.core.services.mongodb.remote.sync.ChangeEventListener;
+import com.mongodb.stitch.core.services.mongodb.remote.sync.DefaultSyncConflictResolvers;
+import com.mongodb.stitch.core.services.mongodb.remote.sync.internal.SyncConfiguration;
 
 import org.bson.BsonDocument;
+import org.bson.BsonObjectId;
+import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.codecs.BsonDocumentCodec;
 import org.bson.types.ObjectId;
@@ -228,6 +233,8 @@ public class MainActivity extends AppCompatActivity {
                 sendTwilioSMS();
             }
         });
+
+        sync();
     }
 
     public void newAlertWithMessageOnUIThread(String funcName, String result) {
@@ -235,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Log.d("app", String.format("Alert for func %s with result: %s", funcName, result));
+                Log.d("TKAPP", String.format("Alert for func %s with result: %s", funcName, result));
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
                 builder1.setMessage(funcName + ": " + result);
                 builder1.setCancelable(true);
@@ -349,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
 
         // One way to iterate through
         findResults.forEach(item -> {
-            Log.d("app", String.format("successfully found:  %s", item.toString()));
+            Log.d("TKAPP", String.format("successfully found:  %s", item.toString()));
         });
 
         // Another way to iterate through
@@ -523,7 +530,7 @@ public class MainActivity extends AppCompatActivity {
         );
 
         itemsCollection.aggregate(aggregationPipeLine).forEach(item -> {
-            Log.d("app", String.format("aggregation result:  %s", item.toString()));
+            Log.d("TKAPP", String.format("aggregation result:  %s", item.toString()));
         });
 
         // Another way to iterate through
@@ -551,7 +558,7 @@ public class MainActivity extends AppCompatActivity {
     /***************************************************************************
      * WATCH                                                                   *
      ***************************************************************************/
-    private void blockAndHandleChangeEvent(ChangeStream<Task<ChangeEvent>, Document> changeStream) {
+    private void blockAndHandleChangeEvent(ChangeStream<Task<ChangeEvent>> changeStream) {
         try {
             changeStream.nextEvent().addOnCompleteListener(new OnCompleteListener<ChangeEvent>() {
                 @Override
@@ -588,6 +595,71 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private class customListener implements ChangeEventListener<Document> {
+        @Override
+        public void onEvent(BsonValue documentId, ChangeEvent<Document> event) {
+            newAlertWithMessageOnUIThread("Sync Listener", event.getFullDocument().toJson());
+        }
+    }
+
+    public void sync(){
+        StitchAppClient stitchClient = Stitch.getDefaultAppClient();
+
+        // Login with Anonymous credentials and handle the result
+        stitchClient.getAuth().loginWithCredential(new AnonymousCredential()).addOnCompleteListener(new OnCompleteListener<StitchUser>() {
+            @Override
+            public void onComplete(@NonNull final Task<StitchUser> task) {
+                if (task.isSuccessful()) {
+                    newAlertWithMessageOnUIThread("anonymousLogin", String.format("logged in as user %s with provider %s", task.getResult().getId(), task.getResult().getLoggedInProviderType()));
+                    itemsCollection.sync().configure(new SyncConfiguration.Builder()
+                        .withConflictHandler(DefaultSyncConflictResolvers.localWins())
+                        .withChangeEventListener(new customListener())
+                        .build()
+                    ).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (!task.isSuccessful()) {
+                                newAlertWithMessageOnUIThread("Sync Configure Error", task.getException().getLocalizedMessage());
+                                return;
+                            }
+
+                            List<BsonObjectId> ids = new ArrayList<>();
+                            RemoteFindIterable findResults = itemsCollection.find().projection(new Document().append("_id", 1));
+                            findResults.into(new ArrayList<Document>()).addOnCompleteListener(new OnCompleteListener <List<Document>> () {
+                                @Override
+                                public void onComplete(@NonNull Task<List<Document>> task) {
+                                    if (task.isSuccessful()) {
+                                        List<Document> items = task.getResult();
+                                        for (Document item: items) {
+                                            ids.add(new BsonObjectId(item.getObjectId("_id")));
+                                        }
+                                        BsonObjectId[] idsArr = new BsonObjectId[ids.size()];
+                                        idsArr = ids.toArray(idsArr);
+
+                                        itemsCollection.sync().syncMany(idsArr).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    newAlertWithMessageOnUIThread("syncMany", "call to syncMany succeeded");
+                                                } else {
+                                                    newAlertWithMessageOnUIThread("syncMany", String.format("failed initial syncMany() with err: %s", task.getException().getLocalizedMessage()));
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        Log.e("TKAPP", "failed to find documents with: ", task.getException());
+                                    }
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    newAlertWithMessageOnUIThread("anonymousLogin", String.format("failed with err: %s", task.getException().getLocalizedMessage()));
+                }
+            }
+        });
+    }
+
     public void watch(){
         List<ObjectId> ids = new ArrayList<>();
         RemoteFindIterable findResults = itemsCollection.find().projection(new Document().append("_id", 1));
@@ -604,12 +676,12 @@ public class MainActivity extends AppCompatActivity {
 
                     ObjectId[] idsArr = new ObjectId[ids.size()];
                     idsArr = ids.toArray(idsArr);
-                    Task<ChangeStream<Task<ChangeEvent>, Document>> cs = itemsCollection.watch(idsArr);
-                    cs.addOnCompleteListener(new OnCompleteListener<ChangeStream<Task<ChangeEvent>, Document>>() {
+                    Task<ChangeStream<Task<ChangeEvent>>> cs = itemsCollection.watch(idsArr);
+                    cs.addOnCompleteListener(new OnCompleteListener<ChangeStream<Task<ChangeEvent>>>() {
                         @Override
-                        public void onComplete(@NonNull Task<ChangeStream<Task<ChangeEvent>, Document>> task) {
+                        public void onComplete(@NonNull Task<ChangeStream<Task<ChangeEvent>>> task) {
                             if (task.isSuccessful()) {
-                                ChangeStream<Task<ChangeEvent>, Document> changeStream = task.getResult();
+                                ChangeStream<Task<ChangeEvent>> changeStream = task.getResult();
                                 newAlertWithMessageOnUIThread("watch", "Successfully set up change stream");
                                 new Thread(new Runnable() {
                                     @Override
@@ -680,7 +752,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void listUsers() {
         for (StitchUser user : stitchClient.getAuth().listUsers()) {
-            Log.d("app", String.format("%s %s", user.getId(), user.getLoggedInProviderType()));
+            Log.d("TKAPP", String.format("%s %s", user.getId(), user.getLoggedInProviderType()));
         }
     }
 
@@ -768,9 +840,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Document> task) {
                         if (task.isSuccessful()) {
                             final Document result = task.getResult();
-                            Log.d("myApp", String.format("successfully send message with id %s", result.getString("MessageId")));
+                            Log.d("TKAPP", String.format("successfully send message with id %s", result.getString("MessageId")));
                         } else {
-                            Log.e("myApp", "failed to log in", task.getException());
+                            Log.e("TKAPP", "failed to log in", task.getException());
                         }
                     }
                 });
